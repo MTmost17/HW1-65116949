@@ -6,9 +6,10 @@ class Book {
   String author;
   String isbn;
   int copies;
+  int totalCopies; // เพิ่มตัวแปรนี้เพื่อเก็บจำนวนสำเนาทั้งหมดของหนังสือ
   List<String> borrowers = []; // รายชื่อผู้ยืมหนังสือ
 
-  Book(this.title, this.author, this.isbn, this.copies);
+  Book(this.title, this.author, this.isbn, this.copies) : totalCopies = copies;
 
   void borrowBook(String memberName) {
     if (copies > 0) {
@@ -21,9 +22,13 @@ class Book {
   }
 
   void returnBook(String memberName) {
-    copies++;
-    borrowers.remove(memberName);
-    print('คืนหนังสือ: $title');
+    if (copies < totalCopies) {
+      copies++;
+      borrowers.remove(memberName);
+      print('คืนหนังสือ: $title');
+    } else {
+      print('ไม่สามารถคืนได้: จำนวนสำเนาเกินที่มีอยู่.');
+    }
   }
 }
 
@@ -103,11 +108,34 @@ class Library {
       }
     }
   }
+
+  void listMembers() {
+    if (members.isEmpty) {
+      print('ไม่มีสมาชิกในห้องสมุด.');
+    } else {
+      for (var member in members) {
+        print('ชื่อสมาชิก: ${member.name}, รหัสสมาชิก: ${member.memberId}');
+        if (member.borrowedBooks.isNotEmpty) {
+          print('หนังสือที่ยืม: ${member.borrowedBooks.map((book) => book.title).join(', ')}');
+        }
+      }
+    }
+  }
 }
 
 // Menu //
 void main() {
   Library library = Library();
+
+  // เพิ่มหนังสือบางเล่มเพื่อการทดสอบ
+  library.addBook(Book('หนังสือ A', 'ผู้เขียน A', 'ISBN001', 3));
+  library.addBook(Book('หนังสือ B', 'ผู้เขียน B', 'ISBN002', 2));
+  library.addBook(Book('หนังสือ C', 'ผู้เขียน C', 'ISBN003', 5));
+
+  // เพิ่มสมาชิกบางคนเพื่อการทดสอบ
+  library.registerMember(Member('สมชาย', 'MEM001'));
+  library.registerMember(Member('สมหญิง', 'MEM002'));
+  library.registerMember(Member('สมปอง', 'MEM003'));
 
   while (true) {
     print('ระบบจัดการห้องสมุด');
@@ -117,7 +145,8 @@ void main() {
     print('4. ยืมหนังสือ');
     print('5. คืนหนังสือ');
     print('6. แสดงหนังสือทั้งหมด');
-    print('7. ออกจากระบบ');
+    print('7. แสดงสมาชิกทั้งหมด');
+    print('8. ออกจากระบบ');
     print('กรุณาเลือกตัวเลือก:');
     
     String? choice = stdin.readLineSync();
@@ -168,8 +197,12 @@ void main() {
       case '6':
         library.listBooks();
         break;
-        
+
       case '7':
+        library.listMembers();
+        break;
+        
+      case '8':
         exit(0);
         
       default:
